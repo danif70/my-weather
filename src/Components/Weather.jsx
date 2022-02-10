@@ -1,5 +1,7 @@
 import React, { Fragment, useEffect, useState } from "react";
 import axios from "axios";
+import { WEATHER_KEY } from '../keys';
+import {Search2Icon, SunIcon} from "@chakra-ui/icons"
 import {
   Text,
   Container,
@@ -8,7 +10,7 @@ import {
   VStack,
   HStack,
   Input,
-  Button,
+  IconButton,
   InputGroup,
   InputRightElement,
   useColorMode,
@@ -20,27 +22,32 @@ const Weather = () => {
   const [dataFeels, setDataFeels] = useState("");
   const [placeName, setPlaceName] = useState("");
   const [country, setCountry] = useState("");
-  const [description, setDescription] = useState("");
   const [dataDate, setDataDate] = useState("");
   const [icon, setIcon] = useState("");
   const [cityName, setCityName] = useState("");
+  const [humidity, setHumidity] = useState("");
+  const [pressure, setPressure] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
 
 
-  //variables para color mode
-  const { toggleColorMode } = useColorMode();
-  const bgColor = useColorModeValue("lightBlue", "darkGrey");
-  const secondaryBg = useColorModeValue("yellow", "darkBlue");
-  const secondaryFont = useColorModeValue("darkGrey", "yellow");
-  const secondaryPlaceHolder = useColorModeValue("darkGrey", "darkBlue");
-  const inputBg = useColorModeValue("white", "lightBlue");
+
+  const forecastData = (latitude, longitude) => {
+    axios({
+      method: "GET",
+      url: `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&lang=es&units=metric&appid=${WEATHER_KEY}`,
+    })
+    .then((response)=> console.log('forecast',response))
+  }
+
 
   useEffect(() => {
-    const apiKey = "bcfd5686f755cf00b3ab1ab84a7a7de7";
     const getWeather = (position) => {
-      const { latitude, longitude } = position.coords;
+      const { latitude, longitude } = position.coords; //se extrae latitud y longitud de coords
+      
       axios({
         method: "GET",
-        url: `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&lang=es&units=metric&appid=${apiKey}`,
+        url: `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&lang=es&units=metric&appid=${WEATHER_KEY}`,
       })
         .then((response) => {
           console.log(response)
@@ -48,18 +55,48 @@ const Weather = () => {
           setDataFeels(response.data.main.feels_like);
           setPlaceName(response.data.name);
           setCountry(response.data.sys.country);
-          setDescription(response.data.weather[0].description);
-          setIcon(response.data.weather[0].icon); 
+          setIcon(response.data.weather[0].icon);
+          setHumidity(response.data.main.humidity);
+          setPressure(response.data.main.pressure);
+          setLatitude(response.data.coord.lat)
+          setLongitude(response.data.coord.lon)
+          
         })
         .catch((error) => {
           console.log(error);
         });
-        
-    };
-    
+       forecastData(latitude, longitude) 
+    };    
     navigator.geolocation.getCurrentPosition(getWeather);
   }, []);
 
+  
+ 
+  const getWeatherByCityName = (cityName) => {
+    axios({
+      method: "GET",
+      url: `http://api.openweathermap.org/data/2.5/weather?q=${cityName}&lang=es&units=metric&appid=${WEATHER_KEY}`,
+    })
+      .then((response) => {
+        console.log('by city', response)
+        setDataWeather(response.data.main.temp);
+        setDataFeels(response.data.main.feels_like);
+        setPlaceName(response.data.name);
+        setCountry(response.data.sys.country);
+        setIcon(response.data.weather[0].icon);
+        setHumidity(response.data.main.humidity);
+        setPressure(response.data.main.pressure);
+        setLatitude(response.data.coord.lat)
+        setLongitude(response.data.coord.lon)
+      })
+      .catch((error) => console.log(error));
+      
+  };
+
+
+  
+
+  //Función para fecha
   useEffect(() => {
     const getDate = () => {
       let date = new Date();
@@ -76,24 +113,15 @@ const Weather = () => {
     setDataDate(getDate());
   }, []);
 
-  const getWeatherByCityName = (cityName) => {
-    const apiKey = "bcfd5686f755cf00b3ab1ab84a7a7de7";
-    axios({
-      method: "GET",
-      url: `http://api.openweathermap.org/data/2.5/weather?q=${cityName}&lang=es&units=metric&appid=${apiKey}`,
-    })
-      .then((response) => {
-        setDataWeather(response.data.main.temp);
-        setDataFeels(response.data.main.feels_like);
-        setPlaceName(response.data.name);
-        setCountry(response.data.sys.country);
-        setDescription(response.data.weather[0].description);
-        setIcon(response.data.weather[0].icon);
-      })
-      .catch((error) => console.log(error));
-  };
 
-    
+  //variables para color mode
+  const { toggleColorMode } = useColorMode();
+  const bgColor = useColorModeValue("lightBlue", "darkerGrey");
+  const secondaryBg = useColorModeValue("lightGrey", "darkGrey");
+  const secondaryFont = useColorModeValue("darkGrey", "white");
+  const secondaryPlaceHolder = useColorModeValue("darkGrey", "darkBlue");
+  const inputBg = useColorModeValue("white", "lightBlue");
+
 
   return (
     <Fragment>
@@ -109,51 +137,48 @@ const Weather = () => {
             justifyContent={"center"}
             color={secondaryFont}
           >
-            <Button onClick={toggleColorMode} boxShadow={"sm"}>
-              🌓
-            </Button>
+            <Flex>
+            <HStack alignContent={"center"} justifyContent={"center"}>
+           
             <InputGroup
               justifyContent={"center"}
-              width={"40%"}
-              height={"15%"}
+              width={"70%"}
+              height={"100%"}
               bg={inputBg}
               placeholder={secondaryPlaceHolder}
-              borderRadius={"15"}
+              borderRadius={"20"}
               
             >
               <Input
                 justifyContent={"initial"}
                 border={"none"}
-                
                 focusBorderColor="none"
-                width={"80%"}
-                height={"100%"}
+                width={"90%"}
+                height={"90%"}
+                marginTop={"1.5%"}
                 color={secondaryPlaceHolder}
                 type={"search"}
                 value={cityName}
                 onChange={(e) => setCityName(e.target.value)}
               ></Input>
-              <InputRightElement marginBottom={"0"}>
-                <Button
-                  marginTop={"45%"}
-                  size={"md"}
-                  marginRight={"20%"}
-                  bgColor={"transparent"}
-                  onClick={() => {
+              <InputRightElement _pressed={"none"}>
+              <IconButton onClick={() => {
                     getWeatherByCityName(cityName);
-                  }}
-                >
-                  🌐
-                </Button>
+                    forecastData(latitude, longitude);
+                  }} bgColor={"transparent"} isRound={true }  icon={<Search2Icon />} ></IconButton>
               </InputRightElement>
             </InputGroup>
-
-            <Text fontSize={"15px"}>{dataDate}</Text>
+            <IconButton onClick={toggleColorMode} size={"md"} isRound={true} boxShadow={"sm"} icon={<SunIcon />}>
+              
+              </IconButton>
+            </HStack>
+            </Flex>
+            <Text fontSize={"15px"} fontWeight={"hairline"}>{dataDate}</Text>
             <Text fontSize={"17px"} fontWeight={"semibold"}>
               {placeName}, {country}
             </Text>
             <HStack>
-              <Text fontSize={"28px"} fontWeight={"bold"}>
+              <Text fontSize={"30px"} fontWeight={"extrabold"} fontFamily={"Roboto, sans-serif"}>
                 {Math.round(dataWeather)} °C
               </Text>
               <Image
@@ -161,12 +186,14 @@ const Weather = () => {
                 alt="icon"
               ></Image>
             </HStack>
-            <Text fontSize={"17px"}>
+            <Text fontSize={"15px"} marginTop={"0"}>
               Sensación Térmica: {Math.round(dataFeels)} °C
             </Text>
-            <Text fontSize={"17px"}>
+           {/*  <Text fontSize={"15px"}>
               {description.charAt(0).toUpperCase() + description.slice(1)}
-            </Text>
+            </Text> */}
+            <Text fontSize={"14px"}>Humedad: {humidity}%</Text>
+            <Text fontSize={"14px"}>Presión Atmosférica: {pressure/1000} mbar</Text>
           </VStack>
         </Flex>
       </Container>
