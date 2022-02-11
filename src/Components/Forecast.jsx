@@ -1,21 +1,12 @@
 import React, { Fragment } from "react";
-
 import { VStack, Text, Image, Flex } from "@chakra-ui/react";
 
 const Forecast = ({ eachHour }) => {
- /*  const time = new Date(eachHour.dt).toLocaleDateString("es-ES", {
-    weekday: "long",
-  }); */
-
-
-  
-const time = () => {
-  let date = new Date((eachHour.dt)*1000);
-  let weekDay = new Intl.DateTimeFormat("es-ES", {
-    weekday: "long",
-  }).format(date);
-  return weekDay
-}
+  const timeForecast = () => {
+    let date = new Date(eachHour.dt_txt);
+    let hours = date.getHours();
+    return hours;
+  };
 
   return (
     <Fragment>
@@ -26,7 +17,11 @@ const time = () => {
             alt="icon"
           ></Image>
           <Text>{Math.round(eachHour.main.temp)} °C</Text>
-          <Text>{time()}</Text>
+          {timeForecast() > 12 ? (
+            <Text>{timeForecast() - 12}pm</Text>
+          ) : (
+            <Text>{timeForecast()}am</Text>
+          )}
         </VStack>
       </Flex>
     </Fragment>

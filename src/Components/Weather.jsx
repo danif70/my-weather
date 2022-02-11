@@ -39,7 +39,7 @@ const Weather = () => {
         console.log("coords forecast", latitude, longitude);
         const response = await axios({
           method: "GET",
-          url: `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&cnt=3&lang=es&units=metric&appid=${WEATHER_KEY}`,
+          url: `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&cnt=5&lang=es&units=metric&appid=${WEATHER_KEY}`,
         });
 
         console.log("forecast", response.data.list);
@@ -86,7 +86,6 @@ const Weather = () => {
         url: `http://api.openweathermap.org/data/2.5/weather?q=${cityName}&lang=es&units=metric&appid=${WEATHER_KEY}`,
       });
 
-    
       setDataWeather(response.data.main.temp);
       setDataFeels(response.data.main.feels_like);
       setPlaceName(response.data.name);
@@ -97,7 +96,6 @@ const Weather = () => {
       setLatitude(response.data.coord.lat);
       setLongitude(response.data.coord.lon);
       await forecastData(response.data.coord.lat, response.data.coord.lon);
-    
     } catch (error) {
       console.log(error);
     }
